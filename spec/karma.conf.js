@@ -40,7 +40,6 @@ module.exports = function (config) {
 			'karma-sinon',
 			'karma-expect',
 			'karma-edge-launcher',
-			'karma-ie-launcher',
 			'karma-chrome-launcher',
 			'karma-safari-launcher',
 			'karma-firefox-launcher'],
@@ -114,10 +113,6 @@ module.exports = function (config) {
 					'dom.w3c_touch_events.enabled': 0
 				}
 			},
-			IE10: {
-				base: 'IE',
-				'x-ua-compatible': 'IE=EmulateIE10'
-			}
 		},
 
 		concurrency: 1,

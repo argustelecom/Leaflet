@@ -1,6 +1,7 @@
 import {Point, toPoint} from './Point';
 import * as Util from '../core/Util';
 import {toLatLng} from '../geo/LatLng';
+import {toLatLngBounds} from '../geo/LatLngBounds';
 
 
 /*
@@ -257,9 +258,18 @@ export function polylineCenter(latlngs, crs) {
 		latlngs = latlngs[0];
 	}
 
+	var offsetPoint = new Point(0, 0);
+
+	var bounds = toLatLngBounds(latlngs);
+	var areaBounds = bounds.getNorthWest().distanceTo(bounds.getSouthWest()) * bounds.getNorthEast().distanceTo(bounds.getNorthWest());
+	// tests showed that below 1700 rounding errors are happening
+	if (areaBounds < 1700) {
+		offsetPoint = crs.project(toLatLng(latlngs[0]));
+	}
+
 	var points = [];
 	for (var j in latlngs) {
-		points.push(crs.project(toLatLng(latlngs[j])));
+		points.push(crs.project(toLatLng(latlngs[j])).subtract(offsetPoint));
 	}
 
 	var len = points.length;
@@ -288,5 +298,5 @@ export function polylineCenter(latlngs, crs) {
 			}
 		}
 	}
-	return crs.unproject(toPoint(center));
+	return crs.unproject(toPoint(center[0] + offsetPoint.x, center[1] + offsetPoint.y));
 }

@@ -1,6 +1,7 @@
 import * as LineUtil from './LineUtil';
 import {toLatLng} from '../geo/LatLng';
-import {toPoint} from './Point';
+import {Point, toPoint} from './Point';
+import {toLatLngBounds} from '../geo/LatLngBounds';
 /*
  * @namespace PolyUtil
  * Various utility functions for polygon geometries.
@@ -70,9 +71,18 @@ export function polygonCenter(latlngs, crs) {
 		latlngs = latlngs[0];
 	}
 
+	var offsetPoint = new Point(0, 0);
+
+	var bounds = toLatLngBounds(latlngs);
+	var areaBounds = bounds.getNorthWest().distanceTo(bounds.getSouthWest()) * bounds.getNorthEast().distanceTo(bounds.getNorthWest());
+	// tests showed that below 1700 rounding errors are happening
+	if (areaBounds < 1700) {
+		offsetPoint = crs.project(toLatLng(latlngs[0]));
+	}
+
 	var points = [];
 	for (var k in latlngs) {
-		points.push(crs.project(toLatLng(latlngs[k])));
+		points.push(crs.project(toLatLng(latlngs[k])).subtract(offsetPoint));
 	}
 
 	var len = points.length;
@@ -95,5 +105,5 @@ export function polygonCenter(latlngs, crs) {
 	} else {
 		center = [x / area, y / area];
 	}
-	return crs.unproject(toPoint(center));
+	return crs.unproject(toPoint(center[0] + offsetPoint.x, center[1] + offsetPoint.y));
 }
